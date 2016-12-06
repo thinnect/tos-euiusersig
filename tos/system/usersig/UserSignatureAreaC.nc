@@ -30,15 +30,20 @@ implementation {
 
 	ieee_eui64_t m_eui64;
 
-	uint8_t read_signature_byte(uint8_t* addr)
+	uint8_t read_signature_byte(uint16_t addr)
 	{
-		return boot_signature_byte_get(USERSIG_ADDR + addr);
+		uint8_t value;
+		atomic
+		{
+			value = boot_signature_byte_get(USERSIG_ADDR + addr);
+		}
+		return value;
 	}
 
-	uint16_t read_signature_bytes(uint8_t* addr, uint8_t buf[], uint16_t length)
+	uint16_t read_signature_bytes(uint16_t addr, uint8_t buf[], uint16_t length)
 	{
 		uint16_t i;
-		if(addr + length > (uint8_t*)USERSIG_SIZE)
+		if(addr + length > USERSIG_SIZE)
 		{
 			length = USERSIG_SIZE - (uint16_t)addr;
 		}
@@ -64,7 +69,7 @@ implementation {
 
 		for(i=0;i<USERSIG_SIZE-sizeof(uint16_t);i++)
 		{
-			uint8_t sigbyte = boot_signature_byte_get(USERSIG_ADDR + i);
+			uint8_t sigbyte = read_signature_byte(i);
 			if(sigbyte != 0xFF)
 			{
 				uninitialized = FALSE;
@@ -72,7 +77,7 @@ implementation {
 			crc = crcByte(crc, sigbyte);
 		}
 
-		scrc = ((uint16_t)boot_signature_byte_get(USERSIG_ADDR + i) << 8) + boot_signature_byte_get(USERSIG_ADDR + i + 1);
+		scrc = ((uint16_t)read_signature_byte(i) << 8) + read_signature_byte(i + 1);
 
 		if(uninitialized)
 		{
@@ -128,7 +133,7 @@ implementation {
 			semantic_version_t v = call SignatureVersion.get();
 			if((v.major == USERSIG_VERSION_MAJOR) && (v.minor >= USERSIG_VERSION_MINOR))
 			{
-				read_signature_bytes((uint8_t*)offsetof(nx_usersig_t, header.eui64), m_eui64.data, sizeof(m_eui64.data));
+				read_signature_bytes(offsetof(nx_usersig_t, header.eui64), m_eui64.data, sizeof(m_eui64.data));
 
 				printsiginfo(&v);
 
@@ -172,18 +177,18 @@ implementation {
 	command semantic_version_t SignatureVersion.get()
 	{
 		semantic_version_t v;
-		v.major = read_signature_byte((uint8_t*)offsetof(nx_usersig_t, header.version_major));
-		v.minor = read_signature_byte((uint8_t*)offsetof(nx_usersig_t, header.version_minor));
-		v.patch = read_signature_byte((uint8_t*)offsetof(nx_usersig_t, header.version_patch));
+		v.major = read_signature_byte(offsetof(nx_usersig_t, header.version_major));
+		v.minor = read_signature_byte(offsetof(nx_usersig_t, header.version_minor));
+		v.patch = read_signature_byte(offsetof(nx_usersig_t, header.version_patch));
 		return v;
 	}
 
 	command semantic_version_t PCBVersion.get()
 	{
 		semantic_version_t v;
-		v.major = read_signature_byte((uint8_t*)offsetof(nx_usersig_t, header.pcb_version_major));
-		v.minor = read_signature_byte((uint8_t*)offsetof(nx_usersig_t, header.pcb_version_minor));
-		v.patch = read_signature_byte((uint8_t*)offsetof(nx_usersig_t, header.pcb_version_assembly));
+		v.major = read_signature_byte(offsetof(nx_usersig_t, header.pcb_version_major));
+		v.minor = read_signature_byte(offsetof(nx_usersig_t, header.pcb_version_minor));
+		v.patch = read_signature_byte(offsetof(nx_usersig_t, header.pcb_version_assembly));
 		return v;
 	}
 
@@ -197,7 +202,7 @@ implementation {
 				l = length - 1;
 			}
 			buf[l] = 0;
-			return read_signature_bytes((uint8_t*)offsetof(nx_usersig_t, header.boardname), (uint8_t*)buf, l);
+			return read_signature_bytes(offsetof(nx_usersig_t, header.boardname), (uint8_t*)buf, l);
 		}
 		return 0;
 	}
