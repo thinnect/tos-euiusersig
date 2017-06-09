@@ -6,6 +6,7 @@
  */
 #include <avr/boot.h>
 #include <crc.h>
+#include "time64.h"
 #include "SemanticVersion.h"
 #include "UserSignatureArea.h"
 module UserSignatureAreaC {
@@ -17,6 +18,8 @@ module UserSignatureAreaC {
 		interface Get<semantic_version_t> as PCBVersion;
 		interface Get<semantic_version_t> as SignatureVersion;
 		interface GetString as BoardName;
+
+		interface Get<time64_t> as ProductionTime;
 	}
 	uses {
 		interface Boot as SubBoot;
@@ -205,6 +208,13 @@ implementation {
 			return read_signature_bytes(offsetof(nx_usersig_t, header.boardname), (uint8_t*)buf, l);
 		}
 		return 0;
+	}
+
+	command time64_t ProductionTime.get()
+	{
+		nx_int64_t pt;
+		read_signature_bytes(offsetof(nx_usersig_t, header.unix_time), (uint8_t*)&pt, sizeof(pt));
+		return (time64_t)pt;
 	}
 
 	default event void Boot.booted() { }
