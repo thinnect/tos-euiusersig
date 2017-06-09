@@ -9,6 +9,7 @@
 #include "time64.h"
 #include "SemanticVersion.h"
 #include "UserSignatureArea.h"
+#include "UniversallyUniqueIdentifier.h"
 module UserSignatureAreaC {
 	provides {
 		interface Boot;
@@ -20,6 +21,8 @@ module UserSignatureAreaC {
 		interface GetString as BoardName;
 
 		interface Get<time64_t> as ProductionTime;
+		interface GetStruct<uuid_t> as ManufacturerUuid128;
+		interface GetStruct<uuid_t> as BoardUuid128;
 	}
 	uses {
 		interface Boot as SubBoot;
@@ -215,6 +218,18 @@ implementation {
 		nx_int64_t pt;
 		read_signature_bytes(offsetof(nx_usersig_t, header.unix_time), (uint8_t*)&pt, sizeof(pt));
 		return (time64_t)pt;
+	}
+
+	command error_t ManufacturerUuid128.get(uuid_t* uuid)
+	{
+		memset(uuid, 0, sizeof(uuid_t)); // Will be supported by next version of signature and fall back to all 0 when not known
+		return SUCCESS;
+	}
+
+	command error_t BoardUuid128.get(uuid_t* uuid)
+	{
+		memset(uuid, 0, sizeof(uuid_t)); // Will be supported by next version of signature and fall back to a hash UUID of boardname
+		return SUCCESS;
 	}
 
 	default event void Boot.booted() { }
