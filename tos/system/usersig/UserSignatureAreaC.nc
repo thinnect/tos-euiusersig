@@ -4,7 +4,11 @@
  * @author Raido Pahtma
  * @license MIT
  */
+#ifndef TOSSIM
 #include <avr/boot.h>
+#else
+uint8_t boot_signature_byte_get(uint16_t addr) { return 0xFF; }
+#endif//TOSSIM
 #include <crc.h>
 #include "time64.h"
 #include "SemanticVersion.h"
@@ -107,8 +111,8 @@ implementation {
 		#if __LOG_LEVEL__ & LOG_DEBUG1
 			uint8_t sig[USERSIG_SIZE];
 			uint8_t i;
-			uint16_t read = read_signature_bytes(0, sig, sizeof(sig));
-			debug1("sizeof(nx_usersig_t)=%u read=%u", sizeof(nx_usersig_t), read);
+			uint16_t rd = read_signature_bytes(0, sig, sizeof(sig));
+			debug1("sizeof(nx_usersig_t)=%u read=%u", sizeof(nx_usersig_t), rd);
 			for(i=0;i<sizeof(sig)/32;i++)
 			{
 				debugb1("%02u:", sig+32*i, 32, i);
