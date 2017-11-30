@@ -5,12 +5,13 @@
  * @license MIT
  */
 #ifndef TOSSIM
-#include <avr/boot.h>
+// #include <avr/boot.h>
 #else
 uint8_t boot_signature_byte_get(uint16_t addr) { return 0xFF; }
 #endif//TOSSIM
 #include <crc.h>
 #include "time64.h"
+// #include "types.h"
 #include "SemanticVersion.h"
 #include "UserSignatureArea.h"
 #include "UniversallyUniqueIdentifier.h"
@@ -45,7 +46,7 @@ implementation {
 		uint8_t value;
 		atomic
 		{
-			value = boot_signature_byte_get(USERSIG_ADDR + addr);
+			value = 0xaa;//boot_signature_byte_get(USERSIG_ADDR + addr);
 		}
 		return value;
 	}
