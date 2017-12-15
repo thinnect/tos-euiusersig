@@ -1,6 +1,6 @@
 /**
- * In case of a bad boot, the component uses PersistentAddressC to set up the address and then
- * modifies the EUI64.
+ * In case of a bad boot, the component uses PersistentAddressC to set up the
+ * address and then modifies the EUI64.
  *
  * @author Raido Pahtma
  * @license MIT
